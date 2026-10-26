@@ -1,0 +1,84 @@
+<div class="h-full flex flex-col p-3 gap-2">
+    <!-- Top Section -->
+    <div class="flex flex-col gap-1">
+        <button routerLink="/chat" routerLinkActive="bg-[#2f2f2f]"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#2f2f2f] transition-colors text-sm font-medium text-white/90 text-left">
+            <svg stroke="currentColor" fill="none" class="w-5 h-5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h3a1 1 0 001-1V4zm1 0a2 2 0 11-4 0v1a1 1 0 00-1 1h6a1 1 0 00-1-1V4z">
+                </path>
+            </svg>
+            <span>Chat / Assistant</span>
+        </button>
+
+        <button routerLink="/clients" routerLinkActive="bg-[#2f2f2f]"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#2f2f2f] transition-colors text-sm text-white/90 text-left">
+            <svg stroke="currentColor" fill="none" class="w-5 h-5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                </path>
+            </svg>
+            <span>Clients</span>
+        </button>
+
+        <button routerLink="/vehicles" routerLinkActive="bg-[#2f2f2f]"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#2f2f2f] transition-colors text-sm text-white/90 text-left">
+            <svg stroke="currentColor" fill="none" class="w-5 h-5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                <!-- Using a generic icon for now, car icon would be better -->
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            </svg>
+            <span>Véhicules</span>
+        </button>
+
+        <button routerLink="/invoices" routerLinkActive="bg-[#2f2f2f]"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#2f2f2f] transition-colors text-sm text-white/90 text-left">
+            <svg stroke="currentColor" fill="none" class="w-5 h-5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                </path>
+            </svg>
+            <span>Factures</span>
+        </button>
+    </div>
+
+    <!-- Chat History -->
+    <div class="flex-1 overflow-y-auto mt-4 pr-1">
+        <div class="text-xs font-semibold text-gray-500 mb-2 px-3">Vos chats</div>
+
+        <div (click)="createNewChat()"
+            class="px-3 py-2 text-sm text-blue-400 hover:bg-[#2f2f2f] rounded-lg cursor-pointer mb-2">
+            + Nouvelle conversation
+        </div>
+
+        <div *ngFor="let chat of chatHistory" (click)="selectSession(chat)"
+            class="group px-3 py-2 text-sm text-gray-300 hover:bg-[#2f2f2f] rounded-lg cursor-pointer truncate transition-colors flex justify-between items-center">
+            <span class="truncate flex-1">{{ chat }}</span>
+            <button (click)="deleteSession($event, chat)"
+                class="text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Profile Section -->
+    <div class="mt-auto border-t border-white/5 pt-2">
+        <button
+            class="flex items-center gap-3 px-3 py-3 w-full hover:bg-[#2f2f2f] rounded-lg transition-colors text-left">
+            <div
+                class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-xs font-bold text-white">
+                MC</div>
+            <div class="flex flex-col flex-1 min-w-0">
+                <span class="text-sm font-medium text-white truncate">Mohammed C.</span>
+                <span class="text-xs text-gray-400">Gratuit</span>
+            </div>
+            <span class="text-xs bg-[#2f2f2f] border border-white/10 px-2 py-0.5 rounded text-white">Mettre à
+                niveau</span>
+        </button>
+    </div>
+</div>

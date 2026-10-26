@@ -1,0 +1,179 @@
+<div class="container mx-auto p-6 bg-[#212121] min-h-screen text-gray-200">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Gestion des Véhicules</h2>
+        <div class="flex gap-2">
+            <input type="text" placeholder="Rechercher..."
+                class="px-3 py-2 bg-[#2f2f2f] rounded border border-gray-600 focus:border-blue-500 outline-none">
+            <button (click)="openAddModal()" class="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition">
+                + Nouveau Véhicule
+            </button>
+        </div>
+    </div>
+
+    <div *ngIf="loading" class="text-center py-8">Chargement...</div>
+
+    <div *ngIf="error" class="bg-red-900/50 text-red-200 p-4 rounded mb-4">{{ error }}</div>
+
+    <div *ngIf="!loading && !error" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div *ngFor="let vehicle of vehicles"
+            class="bg-[#2f2f2f] rounded-lg shadow-lg overflow-hidden hover:bg-[#383838] transition cursor-pointer group">
+            <div class="h-48 bg-gray-700 relative">
+                <img *ngIf="vehicle.image_voiture" [src]="vehicle.image_voiture" class="w-full h-full object-cover">
+                <div *ngIf="!vehicle.image_voiture"
+                    class="w-full h-full flex items-center justify-center text-gray-500">
+                    <span class="text-4xl">🚗</span>
+                </div>
+                <div
+                    class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                    <button class="text-white bg-blue-600 px-3 py-1 rounded">Détails</button>
+                </div>
+            </div>
+            <div class="p-4">
+                <h3 class="text-xl font-bold text-white mb-1">{{ vehicle.matricule }}</h3>
+                <p class="text-gray-400 mb-2">{{ vehicle.modele }}</p>
+                <div class="flex justify-between items-center text-sm text-gray-500">
+                    <span>Client ID: {{ vehicle.client_id }}</span>
+                    <div class="flex gap-3">
+                        <button (click)="navigateToInvoice(vehicle); $event.stopPropagation()"
+                            class="text-green-400 hover:text-green-300">Facture</button>
+                        <button (click)="openHistoryModal(vehicle); $event.stopPropagation()"
+                            class="text-blue-400 hover:text-blue-300">Historique ></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="!loading && vehicles.length === 0" class="text-center py-8 text-gray-500">
+        Aucun véhicule trouvé.
+    </div>
+
+    <!-- Modal Ajout Véhicule -->
+    <div *ngIf="showAddModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div class="bg-[#2f2f2f] rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                <h3 class="text-xl font-bold">Nouveau Véhicule</h3>
+                <button (click)="closeAddModal()" class="text-gray-400 hover:text-white">✕</button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <!-- Zone Upload Image -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Photo de la carte grise / plaque</label>
+
+                    <div
+                        class="relative border-2 border-dashed border-gray-600 rounded-lg p-6 hover:border-blue-500 transition text-center cursor-pointer min-h-[200px] flex flex-col items-center justify-center overflow-hidden">
+                        <input type="file" (change)="analyzeImage($event)" accept="image/*"
+                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+
+                        <div *ngIf="!selectedImagePreview" class="text-gray-400">
+                            <span class="text-2xl block mb-2">📷</span>
+                            <span class="text-sm">Cliquez ou glissez une image ici</span>
+                        </div>
+
+                        <img *ngIf="selectedImagePreview" [src]="selectedImagePreview"
+                            class="absolute inset-0 w-full h-full object-contain bg-black/50">
+
+                        <div *ngIf="isAnalyzing"
+                            class="absolute inset-0 bg-black/70 flex items-center justify-center z-20">
+                            <div class="text-blue-400 flex flex-col items-center">
+                                <span class="animate-spin text-2xl mb-2">⚡</span>
+                                <span>Analyse IA...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulaire -->
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Matricule</label>
+                        <input type="text" [(ngModel)]="newVehicle.matricule"
+                            class="w-full bg-[#212121] border border-gray-600 rounded px-3 py-2 focus:border-blue-500 outline-none transition"
+                            [class.border-green-500]="confidence > 0.8">
+                        <p *ngIf="confidence > 0" class="text-xs text-green-500 mt-1">
+                            Confiance IA: {{ (confidence * 100) | number:'1.0-0' }}%
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Modèle</label>
+                        <input type="text" [(ngModel)]="newVehicle.modele"
+                            class="w-full bg-[#212121] border border-gray-600 rounded px-3 py-2 focus:border-blue-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Client</label>
+                        <select [(ngModel)]="newVehicle.client_id"
+                            class="w-full bg-[#212121] border border-gray-600 rounded px-3 py-2 focus:border-blue-500 outline-none">
+                            <option [ngValue]="0" disabled selected>Sélectionner un client</option>
+                            <option *ngFor="let client of clients" [ngValue]="client.id">
+                                {{ client.nom }} {{ client.prenom }} ({{ client.num }})
+                            </option>
+                        </select>
+                        <p *ngIf="loadingClients" class="text-xs text-gray-500 mt-1">Chargement des clients...</p>
+                    </div>
+                </div>
+
+                <div *ngIf="modalError" class="text-red-400 text-sm bg-red-900/20 p-2 rounded">
+                    {{ modalError }}
+                </div>
+            </div>
+
+            <div class="p-4 bg-[#252525] flex justify-end gap-3">
+                <button (click)="closeAddModal()"
+                    class="px-4 py-2 text-gray-300 hover:text-white transition">Annuler</button>
+                <button (click)="saveVehicle()" [disabled]="!newVehicle.matricule || !newVehicle.client_id || isSaving"
+                    class="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                    {{ isSaving ? 'Sauvegarde...' : 'Enregistrer' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Historique -->
+    <div *ngIf="showHistoryModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div class="bg-[#2f2f2f] rounded-lg shadow-xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-[#252525]">
+                <h3 class="text-xl font-bold">Historique - {{ selectedVehicleForHistory?.matricule }}</h3>
+                <button (click)="closeHistoryModal()" class="text-gray-400 hover:text-white">✕</button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1">
+                <div *ngIf="loadingHistory" class="text-center py-8">Chargement de l'historique...</div>
+
+                <div *ngIf="!loadingHistory && selectedVehicleHistory.length === 0"
+                    class="text-center py-8 text-gray-500">
+                    Aucun historique disponible pour ce véhicule.
+                </div>
+
+                <div *ngIf="!loadingHistory && selectedVehicleHistory.length > 0" class="space-y-4">
+                    <div *ngFor="let item of selectedVehicleHistory"
+                        class="bg-[#212121] p-4 rounded border border-gray-700">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-blue-400">Intervention</h4>
+                            <span class="text-xs text-gray-500">{{ item.date | date:'dd/MM/yyyy' }}</span>
+                        </div>
+                        <p class="text-sm text-gray-300 mb-2">{{ item.details_reparation }}</p>
+                        <div class="text-xs text-gray-500 space-y-1">
+                            <div class="flex justify-between">
+                                <span>Main d'oeuvre: {{ item.montant_reparation || 0 }} TND</span>
+                                <span>Pièces: {{ item.montant_pieces || 0 }} TND</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2 border-t border-gray-600 mt-2">
+                                <span>Durée: {{ item.periode_totale_reparation || 0 }} jours</span>
+                                <span class="font-bold text-green-500">Total: {{ (item.montant_reparation || 0) +
+                                    (item.montant_pieces || 0) }} TND</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-[#252525] flex justify-end">
+                <button (click)="closeHistoryModal()"
+                    class="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>

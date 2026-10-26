@@ -1,0 +1,24 @@
+<div class="image-upload-container p-4 border rounded bg-gray-50">
+    <div *ngIf="!previewUrl" class="upload-btn-wrapper">
+        <input type="file" (change)="onFileSelected($event)" accept="image/*" class="block w-full text-sm text-gray-500
+      file:mr-4 file:py-2 file:px-4
+      file:rounded-full file:border-0
+      file:text-sm file:font-semibold
+      file:bg-blue-50 file:text-blue-700
+      hover:file:bg-blue-100
+    " />
+    </div>
+
+    <div *ngIf="previewUrl" class="preview-area mt-2">
+        <img [src]="previewUrl" alt="Preview" class="max-h-32 rounded shadow-sm mb-2">
+        <div class="actions flex gap-2">
+            <button (click)="upload()" [disabled]="isUploading"
+                class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50">
+                {{ isUploading ? 'Uploading...' : 'Send' }}
+            </button>
+            <button (click)="clear()" class="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
